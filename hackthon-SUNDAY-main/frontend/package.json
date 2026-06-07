@@ -1,0 +1,7 @@
+{
+  "type": "module",
+  "scripts": {
+    "start": "node server.mjs 5173",
+    "verify": "node verify.mjs"
+  }
+}

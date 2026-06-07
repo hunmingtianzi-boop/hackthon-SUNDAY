@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AI 肌肤分析与护肤推荐助手</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="app">
+      <header class="topbar">
+        <div class="brand">
+          <span class="brand-mark">AI</span>
+          <div>
+            <strong>肌肤分析与护肤推荐助手</strong>
+            <small>Skin Analysis · Product Recommendation</small>
+          </div>
+        </div>
+        <nav class="topnav" aria-label="页面导航">
+          <a href="#analysis">分析</a>
+          <a href="#recommendations">推荐</a>
+          <a href="#routine">流程</a>
+        </nav>
+      </header>
+
+      <main>
+        <section class="hero">
+          <div class="hero-copy">
+            <p class="eyebrow">Hackathon Frontend</p>
+            <h1>上传照片，生成结构化肌肤报告与个性化护肤方案</h1>
+            <p>
+              前端严格围绕项目接口结构设计：输出 `SkinAnalysisResult`，并渲染 `ProductRecommendation` 推荐列表、风险提醒与早晚护理流程。
+            </p>
+          </div>
+          <div class="hero-visual" aria-hidden="true">
+            <div class="face-card">
+              <div class="face">
+                <span class="eye left"></span>
+                <span class="eye right"></span>
+                <span class="mouth"></span>
+                <span class="spot s1"></span>
+                <span class="spot s2"></span>
+                <span class="spot s3"></span>
+              </div>
+              <div class="scan-line"></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="workspace">
+          <aside class="input-panel">
+            <div class="panel-title">
+              <h2>输入信息</h2>
+              <p>选择样例图或上传图片，完善画像后开始分析。</p>
+            </div>
+
+            <label class="upload-zone" for="imageInput">
+              <input id="imageInput" type="file" accept="image/*" />
+              <span class="upload-plus">+</span>
+              <strong>上传面部或局部肌肤图片</strong>
+              <small>支持 JPG、PNG、WebP</small>
+            </label>
+
+            <div class="sample-grid" id="sampleGrid" aria-label="测试图片示例"></div>
+
+            <div class="preview-card" id="previewCard" hidden>
+              <img id="previewImage" alt="图片预览" />
+              <div>
+                <strong id="previewName">已选择图片</strong>
+                <button type="button" id="clearImage" class="text-button">清除</button>
+              </div>
+            </div>
+
+            <div class="form-grid">
+              <label>
+                <span>已知肤质</span>
+                <select id="skinType">
+                  <option value="自动判断">自动判断</option>
+                  <option value="油性">油性</option>
+                  <option value="干性">干性</option>
+                  <option value="中性">中性</option>
+                  <option value="混合性">混合性</option>
+                  <option value="敏感性">敏感性</option>
+                </select>
+              </label>
+              <label>
+                <span>年龄</span>
+                <input id="age" type="number" min="1" max="120" value="25" />
+              </label>
+              <label>
+                <span>单品预算</span>
+                <input id="budget" type="number" min="0" step="50" value="500" />
+              </label>
+              <label>
+                <span>推荐数量</span>
+                <select id="topN">
+                  <option value="4">4 件</option>
+                  <option value="6" selected>6 件</option>
+                  <option value="8">8 件</option>
+                </select>
+              </label>
+            </div>
+
+            <label class="full-field">
+              <span>过敏/禁忌成分</span>
+              <input id="allergyText" type="text" placeholder="如：酒精, 果酸, A醇" />
+            </label>
+
+            <fieldset class="check-panel">
+              <legend>希望覆盖的护理步骤</legend>
+              <label><input type="checkbox" name="step" value="洁面" checked /> 洁面</label>
+              <label><input type="checkbox" name="step" value="化妆水" checked /> 化妆水</label>
+              <label><input type="checkbox" name="step" value="精华" checked /> 精华</label>
+              <label><input type="checkbox" name="step" value="乳液" checked /> 乳液</label>
+              <label><input type="checkbox" name="step" value="面霜" checked /> 面霜</label>
+              <label><input type="checkbox" name="step" value="防晒" checked /> 防晒</label>
+            </fieldset>
+
+            <fieldset class="concern-panel">
+              <legend>额外关注</legend>
+              <button type="button" data-concern="出油">出油</button>
+              <button type="button" data-concern="痘痘">痘痘</button>
+              <button type="button" data-concern="干燥缺水">干燥缺水</button>
+              <button type="button" data-concern="暗沉">暗沉</button>
+              <button type="button" data-concern="毛孔粗大">毛孔粗大</button>
+              <button type="button" data-concern="泛红敏感">泛红敏感</button>
+              <button type="button" data-concern="细纹">细纹</button>
+              <button type="button" data-concern="屏障受损">屏障受损</button>
+            </fieldset>
+
+            <button class="primary-button" id="analyzeButton" type="button">开始分析并推荐</button>
+            <p class="status" id="statusText">正在加载产品库...</p>
+          </aside>
+
+          <section class="output-panel">
+            <div class="empty-state" id="emptyState">
+              <p class="eyebrow">Ready</p>
+              <h2>等待生成报告</h2>
+              <p>点击左侧样例图片或上传图片后开始分析。结果将以接口规范中的结构化字段展示。</p>
+            </div>
+
+            <div id="resultView" hidden>
+              <section class="analysis-card" id="analysis">
+                <div>
+                  <p class="eyebrow">SkinAnalysisResult</p>
+                  <h2 id="analysisTitle">肌肤状态报告</h2>
+                  <p id="analysisSummary"></p>
+                </div>
+                <div class="score-dial">
+                  <span>综合分</span>
+                  <strong id="overallScore">--</strong>
+                </div>
+              </section>
+
+              <section class="insight-grid">
+                <article>
+                  <span>肤质判断</span>
+                  <strong id="skinTypeResult">--</strong>
+                </article>
+                <article>
+                  <span>有效图片</span>
+                  <strong id="validFaceResult">--</strong>
+                </article>
+                <article>
+                  <span>主要问题</span>
+                  <strong id="issueCountResult">--</strong>
+                </article>
+                <article>
+                  <span>预算上限</span>
+                  <strong id="budgetResult">--</strong>
+                </article>
+              </section>
+
+              <section class="issue-board">
+                <div class="section-head">
+                  <h2>问题识别</h2>
+                  <p>对应接口中的 `issues[]` 字段。</p>
+                </div>
+                <div class="issue-list" id="issueList"></div>
+              </section>
+
+              <section class="product-section" id="recommendations">
+                <div class="section-head">
+                  <h2>推荐产品</h2>
+                  <p>对应 `ProductRecommendation[]`：分数、命中标签、理由和风险提醒。</p>
+                </div>
+                <div class="product-grid" id="productGrid"></div>
+              </section>
+
+              <section class="routine-section" id="routine">
+                <div>
+                  <h2>早间流程</h2>
+                  <ol id="morningRoutine"></ol>
+                </div>
+                <div>
+                  <h2>晚间流程</h2>
+                  <ol id="nightRoutine"></ol>
+                </div>
+              </section>
+
+              <details class="json-panel">
+                <summary>查看接口 JSON</summary>
+                <div class="json-grid">
+                  <div>
+                    <h3>SkinAnalysisResult</h3>
+                    <pre id="analysisJson"></pre>
+                  </div>
+                  <div>
+                    <h3>ProductRecommendation[]</h3>
+                    <pre id="recommendationJson"></pre>
+                  </div>
+                </div>
+              </details>
+
+              <section class="notice">
+                <strong>免责声明</strong>
+                <p>本工具仅供护肤参考，不构成医疗诊断或治疗建议；如有严重皮肤问题，请咨询皮肤科医生。</p>
+              </section>
+            </div>
+          </section>
+        </section>
+      </main>
+    </div>
+
+    <script type="module" src="./js/app.js"></script>
+  </body>
+</html>
